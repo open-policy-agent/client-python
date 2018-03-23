@@ -19,7 +19,7 @@ setup(
     install_requires=[
         'coverage>=4.5.1',
         'flake8>=3.3.0',
-        'wheel>=0.30.0a0',
+        'wheel>=0.30.0',
         'magen_rest_service>=1.3a',
         'docker>=3.1',
         'pip>=9.0',
@@ -37,7 +37,7 @@ setup(
     license='Apache Software License',
     author='Reinaldo Penno',
     author_email='rapenno@gmail.com',
-    description='Python3 REST Client APIs',
+    description='Python3 Open Policy Agent client',
     classifiers=[
         # How mature is this project? Common values are
         #   3 - Alpha
@@ -58,5 +58,5 @@ setup(
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
         'Programming Language :: Python :: 3.6',
-    ],
+    ]
 )
