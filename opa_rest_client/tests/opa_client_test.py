@@ -7,7 +7,10 @@ import unittest
 import docker
 import sys
 
-from opa_rest_client.opa_client_apis import create_opa_policy, create_base_doc, delete_base_doc, get_base_doc
+from magen_utils_apis.compare_utils import compare_dicts
+
+from opa_rest_client.opa_client_apis import create_opa_policy, create_base_doc, delete_base_doc, get_base_doc, \
+    delete_all_base_data_doc, delete_all_policies, delete_policy
 from opa_rest_client.opa_docker_apis import run_opa_docker_container
 from opa_rest_client.tests.opa_client_test_messages import EXAMPLE_DATA, EXAMPLE_POLICY, OPA_EMPTY_RESP
 
@@ -52,9 +55,7 @@ class TestOpaClient(unittest.TestCase):
     def test_create_policy(self):
         pass
 
-    def test_create_data_doc(self):
-        success, message = create_base_doc(type(self).base_doc_url, EXAMPLE_DATA)
-        self.assertTrue(success)
+    def clean_base_doc(self):
         success, message = delete_base_doc(type(self).base_doc_url + "/networks")
         self.assertTrue(success)
         success, message = delete_base_doc(type(self).base_doc_url + "/ports")
@@ -63,13 +64,23 @@ class TestOpaClient(unittest.TestCase):
         self.assertTrue(success)
         resp = get_base_doc(type(self).base_doc_url)
         self.assertTrue(resp.success)
-        self.assertEqual(json.loads(resp.json_body), json.loads(OPA_EMPTY_RESP))
+        expected_resp = json.loads(OPA_EMPTY_RESP)
+        success = compare_dicts(resp.json_body, expected_resp)
+        self.assertTrue(success)
+
+    def test_create_data_doc(self):
+        success, message = create_base_doc(type(self).base_doc_url, EXAMPLE_DATA)
+        self.assertTrue(success)
+        self.clean_base_doc()
 
     def test_create_data_and_policy(self):
         success, message = create_base_doc(type(self).base_doc_url, EXAMPLE_DATA)
         self.assertTrue(success)
-        success, message = create_opa_policy(type(self).base_doc_url, EXAMPLE_POLICY)
+        success, message = create_opa_policy(type(self).base_policies_url + "/example1", EXAMPLE_POLICY.encode("utf-8"))
         self.assertTrue(success)
+        success, message = delete_policy(type(self).base_policies_url + "/example1")
+        self.assertTrue(success)
+        self.clean_base_doc()
 
 
 
