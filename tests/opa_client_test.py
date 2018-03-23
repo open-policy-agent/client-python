@@ -3,11 +3,12 @@
 Test Suit for AppGuard GitHub Integration
 """
 
-import unittest
-import docker
 import sys
+import unittest
 
-from opa_rest_client.opa_client_apis.opa_docker_apis import run_opa_docker_container
+import docker
+
+from opa_rest_client.opa_docker_apis import run_opa_docker_container
 
 __author__ = "Reinaldo Penno"
 __license__ = "Apache"
