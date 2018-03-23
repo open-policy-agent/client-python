@@ -1,3 +1,1 @@
-# coding=utf-8
-"""Init for magen-rest"""
-__version__ = '0.1a1'
+from .opa_client_apis import create_opa_policy

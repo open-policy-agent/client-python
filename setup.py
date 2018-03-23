@@ -14,16 +14,18 @@ if pip_version < 901:
         sys.exit("Sorry, you need pip 9.0.1+")
 
 setup(
-    name='opa_rest_client',
+    name='opa_client',
     version=__version__,
     install_requires=[
         'coverage>=4.5.1',
         'flake8>=3.3.0',
         'wheel>=0.30.0a0',
-        'prometheus_client>=0.1.0',
-        'magen_rest_service>=1.3a6',
+        'magen_rest_service>=1.3a',
+        'docker>=3.1',
+        'pip>=9.0',
+
       ],
-    package_dir={'': '..'},
+    # package_dir={'': '..'},
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
     package_data={
