@@ -20,7 +20,7 @@ setup(
         'coverage>=4.5.1',
         'flake8>=3.3.0',
         'wheel>=0.30.0a0',
-        'magen_rest_service>=1.3',
+        'magen_rest_service>=1.3a',
         'docker>=3.1',
         'pip>=9.0',
 
