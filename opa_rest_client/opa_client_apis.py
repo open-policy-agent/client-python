@@ -1,12 +1,13 @@
-import logging
 import json
+import logging
 from http import HTTPStatus
-from requests import exceptions
 
 from magen_logger.logger_config import LogDefaults
 from magen_rest_apis.rest_client_apis import RestClientApis
 from magen_rest_apis.rest_return_api import RestReturn
-from opa_rest_client.opa_client_apis.opa_exceptions_apis import handle_specific_exception
+from requests import exceptions
+
+from opa_rest_client.opa_exceptions_apis import handle_specific_exception
 
 logger = logging.getLogger(LogDefaults.default_log_name)
 
