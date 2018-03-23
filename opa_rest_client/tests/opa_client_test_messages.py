@@ -1,3 +1,10 @@
+OPA_EMPTY_RESP="""
+{
+  "result": {}
+}
+"""
+
+
 EXAMPLE_DATA= """
 {
   "servers": [

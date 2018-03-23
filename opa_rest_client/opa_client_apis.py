@@ -51,38 +51,52 @@ def create_opa_policy(file_handle, url):
     return policy_resp
 
 
-def create_opa_base_doc(url, json_data):
+def create_base_doc(url, json_data):
     """
     This function creates a OPA policy on the server
     :param url: url address where base document is placed
     :param json_data: Json data for Base Document
-    :return: Rest Return
+    :return: success, message
+    :rtype: tuple
     """
     resp = RestClientApis.http_put_and_check_success(url, json_data)
     return resp.success, resp.message
 
 
-def delete_opa_base_doc(url):
+def delete_all_base_data_doc(url):
     """
-    This function deletes a OPA base doc on the server
+    This function deletes all OPA base docs on the server
     :param url: url address where base document is placed
-    :param json_data: Json data for Base Document
-    :return: Rest Return
+    :return: success, message
+    :rtype: tuple
     """
     data = json.dumps(dict())
     resp = RestClientApis.http_put_and_check_success(url, data)
     return resp.success, resp.message
 
+
+def delete_base_doc(url):
+    """
+    This function deletes an OPA base doc on the server
+    :param url: url address where base document is placed
+    :return: success, message
+    :rtype: tuple
+    """
+    resp = RestClientApis.http_delete_and_check_success(url)
+    return resp.success, resp.message
+
+
+def get_base_doc(url):
+    """
+    This function gets an OPA base doc on the server
+    :param url: url address where base document is placed
+    :return: RestReturn Obj
+    :rtype: RestReturn
+    """
+    resp = RestClientApis.http_get_and_check_success(url)
+    return resp
+
+
 def delete_policy(url):
     resp = RestClientApis.http_delete_and_check_success(url)
-    if resp.http_status != HTTPStatus.OK:
-        raise exceptions.HTTPError(resp.message)
-    return
-
-
-def base_doc_add(url, path, json_value):
-    return
-
-
-def base_doc_remove(url, path):
-    return
+    return resp.success, resp.message

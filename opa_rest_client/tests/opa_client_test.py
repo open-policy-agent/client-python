@@ -2,14 +2,14 @@
 """
 Test Suit for AppGuard GitHub Integration
 """
-
+import json
 import unittest
 import docker
 import sys
 
-from opa_rest_client.opa_client_apis.opa_client_apis import create_opa_base_doc, create_opa_policy
-from opa_rest_client.opa_client_apis.opa_docker_apis import run_opa_docker_container
-from tests.opa_client_test_messages import EXAMPLE_DATA, EXAMPLE_POLICY
+from opa_rest_client.opa_client_apis import create_opa_policy, create_base_doc, delete_base_doc, get_base_doc
+from opa_rest_client.opa_docker_apis import run_opa_docker_container
+from opa_rest_client.tests.opa_client_test_messages import EXAMPLE_DATA, EXAMPLE_POLICY, OPA_EMPTY_RESP
 
 __author__ = "Reinaldo Penno"
 __license__ = "Apache"
@@ -53,12 +53,20 @@ class TestOpaClient(unittest.TestCase):
         pass
 
     def test_create_data_doc(self):
-        success, message = create_opa_base_doc(type(self).base_doc_url, EXAMPLE_DATA)
+        success, message = create_base_doc(type(self).base_doc_url, EXAMPLE_DATA)
         self.assertTrue(success)
-
+        success, message = delete_base_doc(type(self).base_doc_url + "/networks")
+        self.assertTrue(success)
+        success, message = delete_base_doc(type(self).base_doc_url + "/ports")
+        self.assertTrue(success)
+        success, message = delete_base_doc(type(self).base_doc_url + "/servers")
+        self.assertTrue(success)
+        resp = get_base_doc(type(self).base_doc_url)
+        self.assertTrue(resp.success)
+        self.assertEqual(json.loads(resp.json_body), json.loads(OPA_EMPTY_RESP))
 
     def test_create_data_and_policy(self):
-        success, message = create_opa_base_doc(type(self).base_doc_url, EXAMPLE_DATA)
+        success, message = create_base_doc(type(self).base_doc_url, EXAMPLE_DATA)
         self.assertTrue(success)
         success, message = create_opa_policy(type(self).base_doc_url, EXAMPLE_POLICY)
         self.assertTrue(success)
