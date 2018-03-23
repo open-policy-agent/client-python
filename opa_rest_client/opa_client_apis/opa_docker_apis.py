@@ -25,6 +25,7 @@ def run_opa_docker_container(docker_client):
 
     # if container is not running we will start it
     try:
+        # TODO: change name to something more appropriate
         opa_container = docker_client.containers.get("appguard_opa")
         if opa_container.status == "exited" or (opa_container.status == "created"):
             opa_container.remove()
