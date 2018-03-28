@@ -10,9 +10,10 @@ import sys
 from magen_utils_apis.compare_utils import compare_dicts
 
 from opa_rest_client.opa_client_apis import create_opa_policy, create_base_doc, delete_base_doc, get_base_doc, \
-    delete_all_base_data_doc, delete_all_policies, delete_policy
+    delete_policy, patch_base_doc, create_watch, delete_all_policies, destroy_watch
 from opa_rest_client.opa_docker_apis import run_opa_docker_container
-from opa_rest_client.tests.opa_client_test_messages import EXAMPLE_DATA, EXAMPLE_POLICY, OPA_EMPTY_RESP
+from opa_rest_client.tests.opa_client_test_messages import EXAMPLE_DATA, EXAMPLE_POLICY, OPA_EMPTY_RESP, \
+    PATCH_DATA_SERVERS_ADD, PATCH_DATA_SERVERS_REMOVE
 
 __author__ = "Reinaldo Penno"
 __license__ = "Apache"
@@ -78,8 +79,33 @@ class TestOpaClient(unittest.TestCase):
         self.assertTrue(success)
         success, message = create_opa_policy(type(self).base_policies_url + "/example1", EXAMPLE_POLICY.encode("utf-8"))
         self.assertTrue(success)
-        success, message = delete_policy(type(self).base_policies_url + "/example1")
+        success, message, json_dict = delete_policy(type(self).base_policies_url + "/example1")
         self.assertTrue(success)
+        self.clean_base_doc()
+
+    def test_create_data_and_policy_debug(self):
+        success, message = create_base_doc(type(self).base_doc_url, EXAMPLE_DATA)
+        self.assertTrue(success)
+        success, message = create_opa_policy(type(self).base_policies_url + "/example1", EXAMPLE_POLICY.encode("utf-8"))
+        self.assertTrue(success)
+        success, message, json_dict = delete_policy(type(self).base_policies_url + "/example1", debug=True)
+        self.assertTrue(success) and self.assertTrue("metrics" in json_dict)
+        self.clean_base_doc()
+
+    def test_watch(self):
+        success, message = create_base_doc(type(self).base_doc_url, EXAMPLE_DATA)
+        self.assertTrue(success)
+        success, message = create_opa_policy(type(self).base_policies_url + "/example1", EXAMPLE_POLICY.encode("utf-8"))
+        self.assertTrue(success)
+        success, message, watch_cls = create_watch(type(self).base_doc_url + "/servers")
+        self.assertTrue(success)
+        success, message = patch_base_doc(type(self).base_doc_url + "/servers", PATCH_DATA_SERVERS_ADD)
+        self.assertTrue(success)
+        success, message = patch_base_doc(type(self).base_doc_url + "/servers", PATCH_DATA_SERVERS_REMOVE)
+        self.assertTrue(success)
+        success, message, json_dict = delete_policy(type(self).base_policies_url + "/example1", debug=True)
+        self.assertTrue(success)
+        destroy_watch(watch_cls)
         self.clean_base_doc()
 
 

@@ -31,7 +31,7 @@ def run_opa_docker_container(docker_client):
             opa_container.remove()
             raise NotFound("Container Exited or could not be started")
     except NotFound as e:
-        print("OPA docker container not found or not running\n")
+        print("OPA docker container not found or not running. \n")
         opa_container = docker_client.containers.run("openpolicyagent/opa",
                                                      command="run --server --log-level=debug",
                                                      name="appguard_opa",

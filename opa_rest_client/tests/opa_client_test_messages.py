@@ -1,11 +1,11 @@
-OPA_EMPTY_RESP="""
+OPA_EMPTY_RESP = """
 {
   "result": {}
 }
 """
 
 
-EXAMPLE_DATA= """
+EXAMPLE_DATA = """
 {
   "servers": [
     {
@@ -91,7 +91,7 @@ EXAMPLE_DATA= """
 }
 """
 
-EXAMPLE_POLICY="""
+EXAMPLE_POLICY = """
 # This policy module belongs to the opa.examples package.
 package opa.examples
 
@@ -123,4 +123,32 @@ public_servers[server] {
     # ...and the network is public.
     networks[j].public = true
 }
+"""
+
+PATCH_DATA_SERVERS_ADD = """
+[
+  {
+    "op": "add",
+    "path": "-",
+    "value": {
+      "id": "s5",
+      "name": "job",
+      "protocols": [
+        "amqp"
+      ],
+      "ports": [
+        "p3"
+      ]
+    }
+  }
+]
+"""
+
+PATCH_DATA_SERVERS_REMOVE = """
+[
+    {
+     "op": "remove",
+     "path": "1"
+    }
+]
 """
