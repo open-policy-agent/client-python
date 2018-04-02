@@ -10,10 +10,11 @@ import sys
 from magen_utils_apis.compare_utils import compare_dicts
 
 from opa_rest_client.opa_client_apis import create_opa_policy, create_base_doc, delete_base_doc, get_base_doc, \
-    delete_policy, patch_base_doc, create_watch, delete_all_policies, destroy_watch
+    delete_policy, patch_base_doc, create_watch, delete_all_policies, destroy_watch, query_policy_with_input
 from opa_rest_client.opa_docker_apis import run_opa_docker_container
 from opa_rest_client.tests.opa_client_test_messages import EXAMPLE_DATA, EXAMPLE_POLICY, OPA_EMPTY_RESP, \
-    PATCH_DATA_SERVERS_ADD, PATCH_DATA_SERVERS_REMOVE
+    PATCH_DATA_SERVERS_ADD, PATCH_DATA_SERVERS_REMOVE, EXAMPLE_POLICY_WITH_INPUT, POST_WITH_INPUT_REQ, \
+    POST_WITH_INPUT_RESP
 
 __author__ = "Reinaldo Penno"
 __license__ = "Apache"
@@ -107,6 +108,18 @@ class TestOpaClient(unittest.TestCase):
         self.assertTrue(success)
         destroy_watch(watch_cls)
         self.clean_base_doc()
+
+    def test_policy_with_input(self):
+        success, message = create_opa_policy(type(self).base_policies_url + "/example1",
+                                             EXAMPLE_POLICY_WITH_INPUT.encode("utf-8"))
+        self.assertTrue(success)
+        success, message, json_dict = query_policy_with_input(type(self).base_doc_url + "/opa/examples/allow_request",
+                                                              POST_WITH_INPUT_REQ)
+        self.assertTrue(success)
+        expected_resp = json.loads(POST_WITH_INPUT_RESP)
+        success = compare_dicts(json_dict, expected_resp)
+        self.assertTrue(success)
+
 
 
 

@@ -152,3 +152,27 @@ PATCH_DATA_SERVERS_REMOVE = """
     }
 ]
 """
+
+EXAMPLE_POLICY_WITH_INPUT = """
+package opa.examples
+
+import input.example.flag
+
+allow_request { flag = true }
+"""
+
+POST_WITH_INPUT_REQ = """
+{
+  "input": {
+    "example": {
+      "flag": true
+    }
+  }
+}
+"""
+
+POST_WITH_INPUT_RESP = """
+{
+  "result": true
+}
+"""
