@@ -161,10 +161,14 @@ def destroy_watch(opa_watch_cls):
     opa_watch_cls.proc.join()
 
 
-def query_policy_with_input(url, json_data):
+def execute_query(url, json_data):
     resp_obj = RestClientApis.http_post_and_check_success(url, json_data, location=False)
     return resp_obj.success, resp_obj.message, resp_obj.json_body
 
+
+def execute_adhoc_query(url, json_data):
+    resp_obj = RestClientApis.http_post_and_check_success(url, json_data, location=False)
+    return resp_obj.success, resp_obj.message, resp_obj.json_body
 
 
 

@@ -176,3 +176,17 @@ POST_WITH_INPUT_RESP = """
   "result": true
 }
 """
+
+POST_WITHOUT_URL = """
+{
+    "user": ["alice"]
+}
+"""
+
+EXAMPLE_SYSTEM_POLICY = """
+package system
+
+main = msg {
+  sprintf("hello, %v", input.user, msg)
+}
+"""
