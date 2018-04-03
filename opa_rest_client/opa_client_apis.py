@@ -181,7 +181,7 @@ def execute_query(url: str, json_data: str) -> (bool, str, dict):
     return resp_obj.success, resp_obj.message, resp_obj.json_body
 
 
-def execute_adhoc_query(url: str, query_string=None) -> (bool, str, dict):
+def execute_adhoc_query(url: str, query_string: str=None) -> (bool, str, dict):
     """
     Executed an ad-hoc query
     :param query_string: Everything after the ?=
@@ -191,6 +191,6 @@ def execute_adhoc_query(url: str, query_string=None) -> (bool, str, dict):
     """
     if query_string:
         enc_query_string = urllib.parse.quote_plus(query_string)
-        url = url + "?=" + enc_query_string
+        url = url + "?q=" + enc_query_string
     resp_obj = RestClientApis.http_get_and_check_success(url)
     return resp_obj.success, resp_obj.message, resp_obj.json_body

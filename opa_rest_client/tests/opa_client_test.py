@@ -151,3 +151,19 @@ class TestOpaClient(unittest.TestCase):
         success, message, json_dict = delete_policy(type(self).base_policies_url + "/example1")
         self.assertTrue(success)
         self.clean_base_doc()
+
+    def test_adhoc_query_string_param(self):
+        query_string = "data.servers[i].ports[_] = \"p2\"; data.servers[i].name = name"
+        success, message = create_base_doc(type(self).base_doc_url, EXAMPLE_DATA)
+        self.assertTrue(success)
+        success, message = create_opa_policy(type(self).base_policies_url + "/example1", EXAMPLE_POLICY.encode("utf-8"))
+        self.assertTrue(success)
+        # adhoc query
+        success, message, json_body = execute_adhoc_query(type(self).base_query_url, query_string)
+        self.assertTrue(success)
+        expected_resp = json.loads(ADHOC_QUERY_RESP)
+        success = compare_dicts(json_body, expected_resp)
+        self.assertTrue(success)
+        success, message, json_dict = delete_policy(type(self).base_policies_url + "/example1")
+        self.assertTrue(success)
+        self.clean_base_doc()
