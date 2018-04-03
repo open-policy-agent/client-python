@@ -2,6 +2,7 @@ import json
 import logging
 
 import os
+import urllib
 
 from magen_logger.logger_config import LogDefaults
 from magen_rest_apis.rest_client_apis import RestClientApis
@@ -17,12 +18,12 @@ WATCH_QUERY_STRING = "?watch&pretty=true"
 logger = logging.getLogger(LogDefaults.default_log_name)
 
 
-def create_opa_policy(url, policy):
+def create_opa_policy(url: str, policy):
     """
     This function creates a OPA policy on the server
     :param url: url address where policy is placed
     :param file_path: .rego file path or a raw rego string
-    :return: Rest Return
+    :return: RestReturn
     """
     if os.path.isfile(policy):
         with open(policy, 'r') as file:
@@ -37,7 +38,7 @@ def create_opa_policy(url, policy):
         return policy_resp.success, policy_resp.message
 
 
-def create_base_doc(url, json_data):
+def create_base_doc(url: str, json_data: str):
     """
     This function creates a OPA policy on the server
     :param url: url address where base document is placed
@@ -49,13 +50,20 @@ def create_base_doc(url, json_data):
     return resp.success, resp.message
 
 
-def patch_base_doc(url, json_data):
+def patch_base_doc(url: str, json_data: str) -> (bool, str):
+    """
+    Patches a base document.
+    :param url: URL of resource to be patched
+    :param json_data: JSON data as string
+    :return: success and message
+    :rtype: tuple
+    """
     resp = RestClientApis.http_patch_and_check_success(url, json_data,
                                                        headers={'Content-Type': 'application/json-patch+json'})
     return resp.success, resp.message
 
 
-def delete_all_base_data_doc(url, debug=False):
+def delete_all_base_data_doc(url: str, debug=False):
     """
     This function deletes all OPA base docs on the server
     :param url: url address where base document is placed
@@ -69,7 +77,7 @@ def delete_all_base_data_doc(url, debug=False):
     return resp.success, resp.message
 
 
-def delete_base_doc(url, debug=False):
+def delete_base_doc(url: str, debug=False):
     """
     This function deletes an OPA base doc on the server
     :param url: url address where base document is placed
@@ -82,7 +90,7 @@ def delete_base_doc(url, debug=False):
     return resp.success, resp.message
 
 
-def get_base_doc(url, debug=False):
+def get_base_doc(url: str, debug=False) -> (object):
     """
     This function gets an OPA base doc on the server
     :param url: url address where base document is placed
@@ -95,14 +103,14 @@ def get_base_doc(url, debug=False):
     return resp
 
 
-def delete_policy(url, debug=False):
+def delete_policy(url: str, debug=False) -> (bool, str, dict):
     if debug:
         url = url + DEBUG_QUERY_STRING
     resp = RestClientApis.http_delete_and_check_success(url)
     return resp.success, resp.message, resp.json_body
 
 
-def delete_all_policies(url, debug=False):
+def delete_all_policies(url: str, debug=False):
     """
     This function deletes all OPA base docs on the server
     :param url: url address where base document is placed
@@ -139,13 +147,13 @@ def process_watch_stream(resp):
             f.flush()
 
 
-def create_watch(url, callback=None):
+def create_watch(url: str) -> (bool, str, OpaWatch):
     """
     Creates a watch in OPA. Watches are persistent connections and changes to the watch points
     are streamed back through chunked-encoding.
-    :param url:
-    :param callback:
-    :return:
+    :param url: URL for resource to watch
+    :return: success, message, OpaWatch class
+    :rtype: tuple(bool, message, OpaWatch)
     """
     orig_url = url
     url = url + WATCH_QUERY_STRING
@@ -156,16 +164,33 @@ def create_watch(url, callback=None):
     return resp_obj.success, resp_obj.message, opa_watch
 
 
-def destroy_watch(opa_watch_cls):
+def destroy_watch(opa_watch_cls: OpaWatch):
     opa_watch_cls.proc.terminate()
     opa_watch_cls.proc.join()
 
 
-def execute_query(url, json_data):
+def execute_query(url: str, json_data: str) -> (bool, str, dict):
+    """
+
+    :param url: URL for query
+    :param json_data: JSON in string format.
+    :return: success, message and json body in dict
+    :rtype: tuple(bool, str, dict)
+    """
     resp_obj = RestClientApis.http_post_and_check_success(url, json_data, location=False)
     return resp_obj.success, resp_obj.message, resp_obj.json_body
 
 
-def execute_adhoc_query(url):
+def execute_adhoc_query(url: str, query_string=None) -> (bool, str, dict):
+    """
+    Executed an ad-hoc query
+    :param query_string: Everything after the ?=
+    :param url: URL for query that includes the query string
+    :return: success, message and json body as dict
+    :rtype: tuple(bool, str, dict)
+    """
+    if query_string:
+        enc_query_string = urllib.parse.quote_plus(query_string)
+        url = url + "?=" + enc_query_string
     resp_obj = RestClientApis.http_get_and_check_success(url)
     return resp_obj.success, resp_obj.message, resp_obj.json_body
