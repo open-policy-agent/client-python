@@ -190,3 +190,18 @@ main = msg {
   sprintf("hello, %v", input.user, msg)
 }
 """
+
+ADHOC_QUERY_RESP = """
+{
+  "result": [
+    {
+      "i": 0,
+      "name": "app"
+    },
+    {
+      "i": 3,
+      "name": "dev"
+    }
+  ]
+}
+"""

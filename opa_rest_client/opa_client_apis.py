@@ -166,10 +166,6 @@ def execute_query(url, json_data):
     return resp_obj.success, resp_obj.message, resp_obj.json_body
 
 
-def execute_adhoc_query(url, json_data):
-    resp_obj = RestClientApis.http_post_and_check_success(url, json_data, location=False)
+def execute_adhoc_query(url):
+    resp_obj = RestClientApis.http_get_and_check_success(url)
     return resp_obj.success, resp_obj.message, resp_obj.json_body
-
-
-
-
