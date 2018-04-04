@@ -48,7 +48,7 @@ class OPAClient(object):
             words = name.split('/')
             valid_words = [x for x in words if x.isalpha()]
             if len(words) != len(valid_words):
-                raise OPAValidationError('only slashes and letter are acceptable in policy name')
+                raise OPAValidationError('only slashes and letters are acceptable in policy name')
         validate()
         policy_url = self.base + 'policies' + name
         if os.path.isfile(rego_policy):
