@@ -65,4 +65,4 @@ def load_policy_and_data_opa(policy_text=POLICY_REGO_TEXT, policy_data=POLICY_DA
 
     return policy_resp.status_code == 200 and data_resp.status_code == 204
 
-print(load_policy_and_data_opa())
+# print(load_policy_and_data_opa())

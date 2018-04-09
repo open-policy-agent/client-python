@@ -1,4 +1,4 @@
-# coding=uft-8
+# coding=utf-8
 """
 Open Policy Client module.
 
@@ -10,14 +10,13 @@ import json
 import urllib
 
 from http import HTTPStatus
-from magen_rest_apis.rest_client_apis import RestClientApis
 from multiprocessing import Process
-
 from requests.exceptions import ChunkedEncodingError
+from functools import singledispatch
 
-from opa_rest_client.opa_watch import OpaWatch
+from magen_rest_apis.rest_client_apis import RestClientApis
 from magen_rest_apis.rest_return_api import RestReturn
-
+from opa_rest_client.opa_watch import OpaWatch
 from opa_rest_client.policy import Policy
 from opa_rest_client.config import INVALID_REGO_ERROR
 
@@ -25,41 +24,88 @@ DEBUG_QUERY_STRING = "?explain=full&pretty"
 WATCH_QUERY_STRING = "?watch&pretty=true"
 
 
-def read_from_file(file_path):
+def read_from_file(file_path: str) -> str:
+    """
+    Read from file and return a blob of data
+    :param file_path: path to a file
+    :type file_path: str
+    :return: data blob
+    :rtype: str
+    """
     with open(file_path) as file:
         blob = file.read()
     return blob
 
 
+@singledispatch
+def get_policy_blob():
+    """
+    Single Dispatch for several policy types.
+
+    This dispatch works with:
+     - str
+     - file
+    # :param policy: policy of a certain type
+    :return: policy blob
+    """
+    raise NotImplementedError('Unsupported policy type')
+
+
+@get_policy_blob.register(str)
+def _(policy: str):
+    if os.path.isfile(policy):
+        return read_from_file(policy)
+    return policy
+
+
+@get_policy_blob.register(object)
+def _(policy: object):
+    return policy.read()
+
+
 class OPAValidationError(Exception):
+    """ Exception custom class """
     pass
 
 
 class OPAClient(object):
+    """ Open Policy Agent connection client """
 
     def __init__(self, server='localhost', port=8181, **kwargs):
         self.server = server
         self.port = str(port)
-        api_version = kwargs.pop('api_version') or 'v1'
-        self.base = 'http://' + self.server + ':' + self.port + '/' + api_version
+        api_version = kwargs.pop('api_version', None) or 'v1'
+        self.base = 'http://' + self.server + ':' + self.port + '/' + api_version + '/'
 
-    def create_policy(self, name, rego_policy):
+    def create_policy(self, name: str, rego_policy: str) -> Policy:
+        """
+        Policy creation invokes PUT request to an OPA server and returns a policy object
+        :param name: name of policy; allows '/'
+        :type name: str
+        :param rego_policy: blob policy in REGO language
+        :type rego_policy: str or file handler
+        :return: policy object
+        :rtype: Policy
+        """
         def validate():
+            """
+            validation function for name parameter
+            :rtype: void
+            """
             words = name.split('/')
-            valid_words = [x for x in words if x.isalpha()]
+            valid_words = [x for x in words if x.isalpha() or '_' in x]
             if len(words) != len(valid_words):
-                raise OPAValidationError('only slashes and letters are acceptable in policy name')
+                raise OPAValidationError('only slashes, underscores and letters are acceptable in policy name')
         validate()
-        policy_url = self.base + 'policies' + name
-        if os.path.isfile(rego_policy):
-            rego_policy = read_from_file(rego_policy)
+        policy_url = self.base + 'policies/' + name
+        rego_policy = get_policy_blob(rego_policy)
 
         rest_response = RestClientApis.http_put_and_check_success(policy_url,
                                                                   rego_policy, headers={'Content-Type': 'text/plain'})
 
         rest_json = rest_response.json_body
         if rest_response.http_status == HTTPStatus.BAD_REQUEST and rest_json.get('code') == INVALID_REGO_ERROR:
-            raise OPAValidationError(rest_json.get('errors', {}).get('message', 'Invalid or Empty REGO'))
+            raise OPAValidationError(str(rest_json.get('errors', 'Invalid or Empty REGO')))
 
         if rest_response.http_status == HTTPStatus.OK and not rest_json:
             return Policy(policy_name=name, policy_path=policy_url, rego_contents=rego_policy)
@@ -85,7 +131,7 @@ def create_opa_policy(url: str, policy):
         return policy_resp.success, policy_resp.message
 
 
-def create_opa_base_doc(url, json_data):
+def create_base_doc(url, json_data):
     """
     This function creates a OPA policy on the server
     :param url: url address where base document is placed
@@ -241,3 +287,25 @@ def execute_adhoc_query(url: str, query_string: str=None) -> (bool, str, dict):
         url = url + "?q=" + enc_query_string
     resp_obj = RestClientApis.http_get_and_check_success(url)
     return resp_obj.success, resp_obj.message, resp_obj.json_body
+
+
+policy_rego = '''
+package appguard
+
+# HTTP API request
+import input as http_api
+
+default allow = false
+
+# Allow configuration that matches data portion
+allow {
+   http_api.zone  = data.appguard_config[i]["example.com/zone"]
+   http_api.classification = data.appguard_config[i]["example.com/classification"]
+}
+'''
+
+
+if __name__ == '__main__':
+    opa = OPAClient()
+    result = opa.create_policy('mypolicy', policy_rego)
+    print(result)

@@ -1,0 +1,9 @@
+package opa_test
+
+default allow = false
+
+# Allow configuration that matches data portion
+allow {
+   input.zone  = data.opa_config[i]["example.com/zone"]
+   input.classification = data.opa_config[i]["example.com/classification"]
+}
