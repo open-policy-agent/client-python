@@ -34,7 +34,7 @@ def read_from_file(file_path: str) -> str:
     """
     with open(file_path) as file:
         blob = file.read()
-    return blob
+    return blob.encode()
 
 
 @singledispatch
@@ -55,12 +55,17 @@ def get_policy_blob():
 def _(policy: str):
     if os.path.isfile(policy):
         return read_from_file(policy)
+    return policy.encode()
+
+
+@get_policy_blob.register(bytes)
+def _(policy: object):
     return policy
 
 
 @get_policy_blob.register(object)
 def _(policy: object):
-    return policy.read()
+    return policy.read().encode()
 
 
 class OPAValidationError(Exception):
@@ -77,7 +82,7 @@ class OPAClient(object):
         api_version = kwargs.pop('api_version', None) or 'v1'
         self.base = 'http://' + self.server + ':' + self.port + '/' + api_version + '/'
 
-    def create_policy(self, name: str, rego_policy: str) -> Policy:
+    def create_policy(self, name: str, rego_policy) -> Policy:
         """
         Policy creation invokes PUT request to an OPA server and returns a policy object
         :param name: name of policy; allows '/'

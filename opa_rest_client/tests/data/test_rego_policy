@@ -1,9 +1,31 @@
-package opa_test
+# This policy module belongs to the opa.examples package.
+package opa.examples
 
-default allow = false
+# Refer to data.servers as `servers`.
+import data.servers
+# Refer to the data.networks as `networks`.
+import data.networks
+# Refer to the data.ports as `ports`.
+import data.ports
 
-# Allow configuration that matches data portion
-allow {
-   input.zone  = data.opa_config[i]["example.com/zone"]
-   input.classification = data.opa_config[i]["example.com/classification"]
+# A server exists in the violations set if...
+violations[server] {
+    # ...the server exists
+    server = servers[_]
+    # ...and any of the server’s protocols is HTTP
+    server.protocols[_] = "http"
+    # ...and the server is public.
+    public_servers[server] = true
+}
+
+# A server exists in the public_servers set if...
+public_servers[server] {
+    # ...the server exists
+    server = servers[_]
+    # ...and the server is connected to a port
+    server.ports[_] = ports[i].id
+    # ...and the port is connected to a network
+    ports[i].networks[_] = networks[j].id
+    # ...and the network is public.
+    networks[j].public = true
 }

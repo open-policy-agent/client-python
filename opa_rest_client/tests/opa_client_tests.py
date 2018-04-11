@@ -12,18 +12,7 @@ from opa_rest_client.opa_docker_apis import run_opa_docker_container
 from opa_rest_client.opa_client_apis import OPAClient, OPAValidationError
 from opa_rest_client.policy import Policy
 
-
-TEST_REGO_POLICY = '''
-package opa_test
-
-default allow = false
-
-# Allow configuration that matches data portion
-allow {
-   input.zone  = data.opa_config[i]["example.com/zone"]
-   input.classification = data.opa_config[i]["example.com/classification"]
-}
-'''
+from .opa_client_test_messages import EXAMPLE_POLICY
 
 
 class TestOpaClient(unittest.TestCase):
@@ -53,7 +42,7 @@ class TestOpaClient(unittest.TestCase):
         opa_client = OPAClient()
 
         test_name = 'tests/test_policy'
-        test_policy = TEST_REGO_POLICY
+        test_policy = EXAMPLE_POLICY
 
         # valid parameters, valid REGO, REGO blob
         policy_obj = opa_client.create_policy(test_name, test_policy)
@@ -61,7 +50,7 @@ class TestOpaClient(unittest.TestCase):
         self.assertIsInstance(policy_obj, Policy)
         self.assertEqual(policy_obj.name, test_name)
         self.assertEqual(policy_obj.data_files, list())
-        self.assertEqual(policy_obj.contents, test_policy)
+        self.assertEqual(policy_obj.contents, test_policy.encode())
 
         # invalid parameters, valid REGO, REGO blob
         test_name = 'invalid-name'  # only slashes and underscores allowed
@@ -75,8 +64,18 @@ class TestOpaClient(unittest.TestCase):
         self.assertRaises(OPAValidationError, opa_client.create_policy, test_name, test_policy)
 
         # valid parameters, valid REGO, REGO file path
-        # multiple default rules with same name are not allowed by OPA ('allow' rule)
-        self.assertRaises(OPAValidationError, opa_client.create_policy, test_name, type(self).test_rego_policy_path)
+        policy_obj = opa_client.create_policy(test_name, type(self).test_rego_policy_path)
+        self.assertIsInstance(policy_obj, Policy)
+        self.assertEqual(policy_obj.name, test_name)
+        self.assertEqual(policy_obj.data_files, list())
+        with open(type(self).test_rego_policy_path) as f:
+            test_policy = f.read()
+        self.assertEqual(policy_obj.contents, test_policy.encode())
 
-        with open(type(self).test_rego_policy_path) as test_policy:
-            self.assertRaises(OPAValidationError, opa_client.create_policy, test_name, test_policy)
+        # valid parameters, valid REGO, REGO file handler
+        with open(type(self).test_rego_policy_path) as test_policy_handler:
+            policy_obj = opa_client.create_policy(test_name, test_policy_handler)
+        self.assertIsInstance(policy_obj, Policy)
+        self.assertEqual(policy_obj.name, test_name)
+        self.assertEqual(policy_obj.data_files, list())
+        self.assertEqual(policy_obj.contents, test_policy.encode())
