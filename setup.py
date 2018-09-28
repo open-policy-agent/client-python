@@ -9,9 +9,6 @@ with open(os.path.join(os.path.dirname(__file__), '__init__.py')) as version_fil
 if sys.version_info < (3, 6, 3):
     sys.exit("Sorry, you need Python 3.6.3+")
 
-pip_version = int(pip.__version__.replace(".", ""))
-if pip_version < 901:
-        sys.exit("Sorry, you need pip 9.0.1+")
 
 setup(
     name='opa_client',
@@ -22,7 +19,7 @@ setup(
         'wheel>=0.30.0',
         'magen_rest_service>=1.3a',
         'docker>=3.1',
-        'pip>=9.0',
+        'pip>=9.0.1',
 
       ],
     # package_dir={'': '..'},
